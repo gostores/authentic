@@ -13,7 +13,7 @@ import (
 	"errors"
 	"log"
 
-	"github.com/gostores/sincere/asno"
+	"github.com/gostores/authentic/asno"
 )
 
 // Attribute represents an LDAP attribute

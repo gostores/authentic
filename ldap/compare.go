@@ -23,7 +23,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/gostores/sincere/asno"
+	"github.com/gostores/authentic/asno"
 )
 
 // Compare checks to see if the attribute of the dn matches value. Returns true if it does otherwise

@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/gostores/sincere/asno"
+	"github.com/gostores/authentic/asno"
 )
 
 // LDAP Application Codes

@@ -48,7 +48,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gostores/sincere/asno"
+	"github.com/gostores/authentic/asno"
 )
 
 // AttributeTypeAndValue represents an attributeTypeAndValue from https://tools.ietf.org/html/rfc4514

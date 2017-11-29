@@ -9,7 +9,7 @@ import (
 	"net/url"
 
 	"github.com/go-chi/chi"
-	"github.com/gostores/sincere/cas"
+	"github.com/gostores/authentic/cas"
 )
 
 var casURL = "http://[Your CAS SERVER URL]"

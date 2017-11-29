@@ -26,7 +26,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/gostores/sincere/jose/json"
+	"github.com/gostores/authentic/jose/json"
 )
 
 var stripWhitespaceRegex = regexp.MustCompile("\\s")

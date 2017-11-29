@@ -9,7 +9,7 @@ import (
 	"net/url"
 
 	"github.com/golang/glog"
-	"github.com/gostores/sincere/cas"
+	"github.com/gostores/authentic/cas"
 )
 
 type myHandler struct{}

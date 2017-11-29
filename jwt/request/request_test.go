@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gostores/sincere/jwt"
-	"github.com/gostores/sincere/jwt/test"
+	"github.com/gostores/authentic/jwt"
+	"github.com/gostores/authentic/jwt/test"
 )
 
 var requestTestData = []struct {

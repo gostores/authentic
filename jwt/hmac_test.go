@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gostores/sincere/jwt"
+	"github.com/gostores/authentic/jwt"
 )
 
 var hmacTestData = []struct {

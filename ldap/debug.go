@@ -3,7 +3,7 @@ package ldap
 import (
 	"log"
 
-	"github.com/gostores/sincere/asno"
+	"github.com/gostores/authentic/asno"
 )
 
 // debugging type

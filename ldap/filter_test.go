@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gostores/sincere/asno"
-	"github.com/gostores/sincere/ldap"
+	"github.com/gostores/authentic/asno"
+	"github.com/gostores/authentic/ldap"
 )
 
 type compileTest struct {

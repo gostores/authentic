@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gostores/sincere/asno"
+	"github.com/gostores/authentic/asno"
 )
 
 // TestNilPacket tests that nil packets don't cause a panic.

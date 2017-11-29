@@ -3,7 +3,7 @@ package ldap
 import (
 	"errors"
 
-	"github.com/gostores/sincere/asno"
+	"github.com/gostores/authentic/asno"
 )
 
 // SimpleBindRequest represents a username/password bind operation

@@ -3,7 +3,7 @@ package ldap
 import (
 	"fmt"
 
-	"github.com/gostores/sincere/asno"
+	"github.com/gostores/authentic/asno"
 )
 
 // LDAP Result Codes

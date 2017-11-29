@@ -21,7 +21,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/gostores/sincere/jose"
+	"github.com/gostores/authentic/jose"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 

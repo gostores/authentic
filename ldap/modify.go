@@ -29,7 +29,7 @@ import (
 	"errors"
 	"log"
 
-	"github.com/gostores/sincere/asno"
+	"github.com/gostores/authentic/asno"
 )
 
 // Change operation choices

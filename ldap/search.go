@@ -61,7 +61,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/gostores/sincere/asno"
+	"github.com/gostores/authentic/asno"
 )
 
 // scope choices

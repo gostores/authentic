@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/gostores/sincere/ldap"
+	"github.com/gostores/authentic/ldap"
 )
 
 // ExampleConn_Bind demonstrates how to bind a connection to an ldap user

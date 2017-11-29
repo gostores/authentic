@@ -10,7 +10,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/gostores/sincere/jwt"
+	"github.com/gostores/authentic/jwt"
 )
 
 var (

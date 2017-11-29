@@ -3,7 +3,7 @@ package request
 import (
 	"net/http"
 
-	"github.com/gostores/sincere/jwt"
+	"github.com/gostores/authentic/jwt"
 )
 
 // Extract and parse a JWT token from an HTTP request.

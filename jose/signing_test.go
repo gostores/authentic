@@ -25,7 +25,7 @@ import (
 	"io"
 	"testing"
 
-	"github.com/gostores/sincere/jose/json"
+	"github.com/gostores/authentic/jose/json"
 )
 
 type staticNonceSource string

@@ -9,7 +9,7 @@ import (
 	"errors"
 	"log"
 
-	"github.com/gostores/sincere/asno"
+	"github.com/gostores/authentic/asno"
 )
 
 // DelRequest implements an LDAP deletion request

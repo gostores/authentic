@@ -21,7 +21,7 @@ package jose
 import (
 	"testing"
 
-	"github.com/gostores/sincere/jose/json"
+	"github.com/gostores/authentic/jose/json"
 )
 
 type CaseSensitive struct {

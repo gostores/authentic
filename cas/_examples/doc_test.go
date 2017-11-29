@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/gostores/sincere/cas"
+	"github.com/gostores/authentic/cas"
 )
 
 func ExampleRedirectToLogin() {

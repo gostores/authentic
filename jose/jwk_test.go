@@ -29,7 +29,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/gostores/sincere/jose/json"
+	"github.com/gostores/authentic/jose/json"
 )
 
 // Test chain of two X.509 certificates

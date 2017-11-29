@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/gostores/sincere/ldap"
+	"github.com/gostores/authentic/ldap"
 )
 
 func TestSuccessfulDNParsing(t *testing.T) {

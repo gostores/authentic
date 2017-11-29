@@ -28,7 +28,7 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/gostores/sincere/jose/cipher"
+	"github.com/gostores/authentic/jose/cipher"
 )
 
 // A generic RSA-based encrypter/verifier

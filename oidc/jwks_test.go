@@ -14,7 +14,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gostores/sincere/jose"
+	"github.com/gostores/authentic/jose"
 )
 
 type keyServer struct {

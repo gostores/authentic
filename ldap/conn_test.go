@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gostores/sincere/asno"
+	"github.com/gostores/authentic/asno"
 )
 
 func TestUnresponsiveConnection(t *testing.T) {
