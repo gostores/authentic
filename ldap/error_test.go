@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gostores/authentic/asno"
+	"github.com/gostores/encoding/asn1"
 )
 
 // TestNilPacket tests that nil packets don't cause a panic.
@@ -19,11 +19,11 @@ func TestNilPacket(t *testing.T) {
 	}
 
 	// Test for nil result
-	kids := []*asno.Packet{
+	kids := []*asn1.Packet{
 		{},  // Unused
 		nil, // Can't be nil
 	}
-	pack := &asno.Packet{Children: kids}
+	pack := &asn1.Packet{Children: kids}
 	code, _ = getLDAPResultCode(pack)
 
 	if code != ErrorUnexpectedResponse {

@@ -3,7 +3,7 @@ package ldap
 import (
 	"log"
 
-	"github.com/gostores/authentic/asno"
+	"github.com/gostores/encoding/asn1"
 )
 
 // debugging type
@@ -17,8 +17,8 @@ func (debug debugging) Printf(format string, args ...interface{}) {
 	}
 }
 
-func (debug debugging) PrintPacket(packet *asno.Packet) {
+func (debug debugging) PrintPacket(packet *asn1.Packet) {
 	if debug {
-		asno.PrintPacket(packet)
+		asn1.PrintPacket(packet)
 	}
 }

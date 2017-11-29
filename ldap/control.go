@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/gostores/authentic/asno"
+	"github.com/gostores/encoding/asn1"
 )
 
 const (
@@ -32,7 +32,7 @@ type Control interface {
 	// GetControlType returns the OID
 	GetControlType() string
 	// Encode returns the ber packet representation
-	Encode() *asno.Packet
+	Encode() *asn1.Packet
 	// String returns a human-readable description
 	String() string
 }
@@ -50,13 +50,13 @@ func (c *ControlString) GetControlType() string {
 }
 
 // Encode returns the ber packet representation
-func (c *ControlString) Encode() *asno.Packet {
-	packet := asno.Encode(asno.ClassUniversal, asno.TypeConstructed, asno.TagSequence, nil, "Control")
-	packet.AppendChild(asno.NewString(asno.ClassUniversal, asno.TypePrimitive, asno.TagOctetString, c.ControlType, "Control Type ("+ControlTypeMap[c.ControlType]+")"))
+func (c *ControlString) Encode() *asn1.Packet {
+	packet := asn1.Encode(asn1.ClassUniversal, asn1.TypeConstructed, asn1.TagSequence, nil, "Control")
+	packet.AppendChild(asn1.NewString(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagOctetString, c.ControlType, "Control Type ("+ControlTypeMap[c.ControlType]+")"))
 	if c.Criticality {
-		packet.AppendChild(asno.NewBoolean(asno.ClassUniversal, asno.TypePrimitive, asno.TagBoolean, c.Criticality, "Criticality"))
+		packet.AppendChild(asn1.NewBoolean(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagBoolean, c.Criticality, "Criticality"))
 	}
-	packet.AppendChild(asno.NewString(asno.ClassUniversal, asno.TypePrimitive, asno.TagOctetString, string(c.ControlValue), "Control Value"))
+	packet.AppendChild(asn1.NewString(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagOctetString, string(c.ControlValue), "Control Value"))
 	return packet
 }
 
@@ -79,14 +79,14 @@ func (c *ControlPaging) GetControlType() string {
 }
 
 // Encode returns the ber packet representation
-func (c *ControlPaging) Encode() *asno.Packet {
-	packet := asno.Encode(asno.ClassUniversal, asno.TypeConstructed, asno.TagSequence, nil, "Control")
-	packet.AppendChild(asno.NewString(asno.ClassUniversal, asno.TypePrimitive, asno.TagOctetString, ControlTypePaging, "Control Type ("+ControlTypeMap[ControlTypePaging]+")"))
+func (c *ControlPaging) Encode() *asn1.Packet {
+	packet := asn1.Encode(asn1.ClassUniversal, asn1.TypeConstructed, asn1.TagSequence, nil, "Control")
+	packet.AppendChild(asn1.NewString(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagOctetString, ControlTypePaging, "Control Type ("+ControlTypeMap[ControlTypePaging]+")"))
 
-	p2 := asno.Encode(asno.ClassUniversal, asno.TypePrimitive, asno.TagOctetString, nil, "Control Value (Paging)")
-	seq := asno.Encode(asno.ClassUniversal, asno.TypeConstructed, asno.TagSequence, nil, "Search Control Value")
-	seq.AppendChild(asno.NewInteger(asno.ClassUniversal, asno.TypePrimitive, asno.TagInteger, int64(c.PagingSize), "Paging Size"))
-	cookie := asno.Encode(asno.ClassUniversal, asno.TypePrimitive, asno.TagOctetString, nil, "Cookie")
+	p2 := asn1.Encode(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagOctetString, nil, "Control Value (Paging)")
+	seq := asn1.Encode(asn1.ClassUniversal, asn1.TypeConstructed, asn1.TagSequence, nil, "Search Control Value")
+	seq.AppendChild(asn1.NewInteger(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagInteger, int64(c.PagingSize), "Paging Size"))
+	cookie := asn1.Encode(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagOctetString, nil, "Cookie")
 	cookie.Value = c.Cookie
 	cookie.Data.Write(c.Cookie)
 	seq.AppendChild(cookie)
@@ -130,9 +130,9 @@ func (c *ControlBeheraPasswordPolicy) GetControlType() string {
 }
 
 // Encode returns the ber packet representation
-func (c *ControlBeheraPasswordPolicy) Encode() *asno.Packet {
-	packet := asno.Encode(asno.ClassUniversal, asno.TypeConstructed, asno.TagSequence, nil, "Control")
-	packet.AppendChild(asno.NewString(asno.ClassUniversal, asno.TypePrimitive, asno.TagOctetString, ControlTypeBeheraPasswordPolicy, "Control Type ("+ControlTypeMap[ControlTypeBeheraPasswordPolicy]+")"))
+func (c *ControlBeheraPasswordPolicy) Encode() *asn1.Packet {
+	packet := asn1.Encode(asn1.ClassUniversal, asn1.TypeConstructed, asn1.TagSequence, nil, "Control")
+	packet.AppendChild(asn1.NewString(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagOctetString, ControlTypeBeheraPasswordPolicy, "Control Type ("+ControlTypeMap[ControlTypeBeheraPasswordPolicy]+")"))
 
 	return packet
 }
@@ -162,7 +162,7 @@ func (c *ControlVChuPasswordMustChange) GetControlType() string {
 }
 
 // Encode returns the ber packet representation
-func (c *ControlVChuPasswordMustChange) Encode() *asno.Packet {
+func (c *ControlVChuPasswordMustChange) Encode() *asn1.Packet {
 	return nil
 }
 
@@ -188,7 +188,7 @@ func (c *ControlVChuPasswordWarning) GetControlType() string {
 }
 
 // Encode returns the ber packet representation
-func (c *ControlVChuPasswordWarning) Encode() *asno.Packet {
+func (c *ControlVChuPasswordWarning) Encode() *asn1.Packet {
 	return nil
 }
 
@@ -214,12 +214,12 @@ func (c *ControlManageDsaIT) GetControlType() string {
 }
 
 // Encode returns the ber packet representation
-func (c *ControlManageDsaIT) Encode() *asno.Packet {
+func (c *ControlManageDsaIT) Encode() *asn1.Packet {
 	//FIXME
-	packet := asno.Encode(asno.ClassUniversal, asno.TypeConstructed, asno.TagSequence, nil, "Control")
-	packet.AppendChild(asno.NewString(asno.ClassUniversal, asno.TypePrimitive, asno.TagOctetString, ControlTypeManageDsaIT, "Control Type ("+ControlTypeMap[ControlTypeManageDsaIT]+")"))
+	packet := asn1.Encode(asn1.ClassUniversal, asn1.TypeConstructed, asn1.TagSequence, nil, "Control")
+	packet.AppendChild(asn1.NewString(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagOctetString, ControlTypeManageDsaIT, "Control Type ("+ControlTypeMap[ControlTypeManageDsaIT]+")"))
 	if c.Criticality {
-		packet.AppendChild(asno.NewBoolean(asno.ClassUniversal, asno.TypePrimitive, asno.TagBoolean, c.Criticality, "Criticality"))
+		packet.AppendChild(asn1.NewBoolean(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagBoolean, c.Criticality, "Criticality"))
 	}
 	return packet
 }
@@ -249,11 +249,11 @@ func FindControl(controls []Control, controlType string) Control {
 }
 
 // DecodeControl returns a control read from the given packet, or nil if no recognized control can be made
-func DecodeControl(packet *asno.Packet) Control {
+func DecodeControl(packet *asn1.Packet) Control {
 	var (
 		ControlType = ""
 		Criticality = false
-		value       *asno.Packet
+		value       *asn1.Packet
 	)
 
 	switch len(packet.Children) {
@@ -302,7 +302,7 @@ func DecodeControl(packet *asno.Packet) Control {
 		value.Description += " (Paging)"
 		c := new(ControlPaging)
 		if value.Value != nil {
-			valueChildren := asno.DecodePacket(value.Data.Bytes())
+			valueChildren := asn1.DecodePacket(value.Data.Bytes())
 			value.Data.Truncate(0)
 			value.Value = nil
 			value.AppendChild(valueChildren)
@@ -319,7 +319,7 @@ func DecodeControl(packet *asno.Packet) Control {
 		value.Description += " (Password Policy - Behera)"
 		c := NewControlBeheraPasswordPolicy()
 		if value.Value != nil {
-			valueChildren := asno.DecodePacket(value.Data.Bytes())
+			valueChildren := asn1.DecodePacket(value.Data.Bytes())
 			value.Data.Truncate(0)
 			value.Value = nil
 			value.AppendChild(valueChildren)
@@ -331,7 +331,7 @@ func DecodeControl(packet *asno.Packet) Control {
 			if child.Tag == 0 {
 				//Warning
 				warningPacket := child.Children[0]
-				packet := asno.DecodePacket(warningPacket.Data.Bytes())
+				packet := asn1.DecodePacket(warningPacket.Data.Bytes())
 				val, ok := packet.Value.(int64)
 				if ok {
 					if warningPacket.Tag == 0 {
@@ -346,7 +346,7 @@ func DecodeControl(packet *asno.Packet) Control {
 				}
 			} else if child.Tag == 1 {
 				// Error
-				packet := asno.DecodePacket(child.Data.Bytes())
+				packet := asn1.DecodePacket(child.Data.Bytes())
 				val, ok := packet.Value.(int8)
 				if !ok {
 					// what to do?
@@ -363,7 +363,7 @@ func DecodeControl(packet *asno.Packet) Control {
 		return c
 	case ControlTypeVChuPasswordWarning:
 		c := &ControlVChuPasswordWarning{Expire: -1}
-		expireStr := asno.DecodeString(value.Data.Bytes())
+		expireStr := asn1.DecodeString(value.Data.Bytes())
 
 		expire, err := strconv.ParseInt(expireStr, 10, 64)
 		if err != nil {
@@ -407,8 +407,8 @@ func NewControlBeheraPasswordPolicy() *ControlBeheraPasswordPolicy {
 	}
 }
 
-func encodeControls(controls []Control) *asno.Packet {
-	packet := asno.Encode(asno.ClassContext, asno.TypeConstructed, 0, nil, "Controls")
+func encodeControls(controls []Control) *asn1.Packet {
+	packet := asn1.Encode(asn1.ClassContext, asn1.TypeConstructed, 0, nil, "Controls")
 	for _, control := range controls {
 		packet.AppendChild(control.Encode())
 	}

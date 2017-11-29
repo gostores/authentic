@@ -29,7 +29,7 @@ import (
 	"errors"
 	"log"
 
-	"github.com/gostores/authentic/asno"
+	"github.com/gostores/encoding/asn1"
 )
 
 // Change operation choices
@@ -47,12 +47,12 @@ type PartialAttribute struct {
 	Vals []string
 }
 
-func (p *PartialAttribute) encode() *asno.Packet {
-	seq := asno.Encode(asno.ClassUniversal, asno.TypeConstructed, asno.TagSequence, nil, "PartialAttribute")
-	seq.AppendChild(asno.NewString(asno.ClassUniversal, asno.TypePrimitive, asno.TagOctetString, p.Type, "Type"))
-	set := asno.Encode(asno.ClassUniversal, asno.TypeConstructed, asno.TagSet, nil, "AttributeValue")
+func (p *PartialAttribute) encode() *asn1.Packet {
+	seq := asn1.Encode(asn1.ClassUniversal, asn1.TypeConstructed, asn1.TagSequence, nil, "PartialAttribute")
+	seq.AppendChild(asn1.NewString(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagOctetString, p.Type, "Type"))
+	set := asn1.Encode(asn1.ClassUniversal, asn1.TypeConstructed, asn1.TagSet, nil, "AttributeValue")
 	for _, value := range p.Vals {
-		set.AppendChild(asno.NewString(asno.ClassUniversal, asno.TypePrimitive, asno.TagOctetString, value, "Vals"))
+		set.AppendChild(asn1.NewString(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagOctetString, value, "Vals"))
 	}
 	seq.AppendChild(set)
 	return seq
@@ -85,25 +85,25 @@ func (m *ModifyRequest) Replace(attrType string, attrVals []string) {
 	m.ReplaceAttributes = append(m.ReplaceAttributes, PartialAttribute{Type: attrType, Vals: attrVals})
 }
 
-func (m ModifyRequest) encode() *asno.Packet {
-	request := asno.Encode(asno.ClassApplication, asno.TypeConstructed, ApplicationModifyRequest, nil, "Modify Request")
-	request.AppendChild(asno.NewString(asno.ClassUniversal, asno.TypePrimitive, asno.TagOctetString, m.DN, "DN"))
-	changes := asno.Encode(asno.ClassUniversal, asno.TypeConstructed, asno.TagSequence, nil, "Changes")
+func (m ModifyRequest) encode() *asn1.Packet {
+	request := asn1.Encode(asn1.ClassApplication, asn1.TypeConstructed, ApplicationModifyRequest, nil, "Modify Request")
+	request.AppendChild(asn1.NewString(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagOctetString, m.DN, "DN"))
+	changes := asn1.Encode(asn1.ClassUniversal, asn1.TypeConstructed, asn1.TagSequence, nil, "Changes")
 	for _, attribute := range m.AddAttributes {
-		change := asno.Encode(asno.ClassUniversal, asno.TypeConstructed, asno.TagSequence, nil, "Change")
-		change.AppendChild(asno.NewInteger(asno.ClassUniversal, asno.TypePrimitive, asno.TagEnumerated, uint64(AddAttribute), "Operation"))
+		change := asn1.Encode(asn1.ClassUniversal, asn1.TypeConstructed, asn1.TagSequence, nil, "Change")
+		change.AppendChild(asn1.NewInteger(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagEnumerated, uint64(AddAttribute), "Operation"))
 		change.AppendChild(attribute.encode())
 		changes.AppendChild(change)
 	}
 	for _, attribute := range m.DeleteAttributes {
-		change := asno.Encode(asno.ClassUniversal, asno.TypeConstructed, asno.TagSequence, nil, "Change")
-		change.AppendChild(asno.NewInteger(asno.ClassUniversal, asno.TypePrimitive, asno.TagEnumerated, uint64(DeleteAttribute), "Operation"))
+		change := asn1.Encode(asn1.ClassUniversal, asn1.TypeConstructed, asn1.TagSequence, nil, "Change")
+		change.AppendChild(asn1.NewInteger(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagEnumerated, uint64(DeleteAttribute), "Operation"))
 		change.AppendChild(attribute.encode())
 		changes.AppendChild(change)
 	}
 	for _, attribute := range m.ReplaceAttributes {
-		change := asno.Encode(asno.ClassUniversal, asno.TypeConstructed, asno.TagSequence, nil, "Change")
-		change.AppendChild(asno.NewInteger(asno.ClassUniversal, asno.TypePrimitive, asno.TagEnumerated, uint64(ReplaceAttribute), "Operation"))
+		change := asn1.Encode(asn1.ClassUniversal, asn1.TypeConstructed, asn1.TagSequence, nil, "Change")
+		change.AppendChild(asn1.NewInteger(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagEnumerated, uint64(ReplaceAttribute), "Operation"))
 		change.AppendChild(attribute.encode())
 		changes.AppendChild(change)
 	}
@@ -122,8 +122,8 @@ func NewModifyRequest(
 
 // Modify performs the ModifyRequest
 func (l *Conn) Modify(modifyRequest *ModifyRequest) error {
-	packet := asno.Encode(asno.ClassUniversal, asno.TypeConstructed, asno.TagSequence, nil, "LDAP Request")
-	packet.AppendChild(asno.NewInteger(asno.ClassUniversal, asno.TypePrimitive, asno.TagInteger, l.nextMessageID(), "MessageID"))
+	packet := asn1.Encode(asn1.ClassUniversal, asn1.TypeConstructed, asn1.TagSequence, nil, "LDAP Request")
+	packet.AppendChild(asn1.NewInteger(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagInteger, l.nextMessageID(), "MessageID"))
 	packet.AppendChild(modifyRequest.encode())
 
 	l.Debug.PrintPacket(packet)
@@ -149,7 +149,7 @@ func (l *Conn) Modify(modifyRequest *ModifyRequest) error {
 		if err := addLDAPDescriptions(packet); err != nil {
 			return err
 		}
-		asno.PrintPacket(packet)
+		asn1.PrintPacket(packet)
 	}
 
 	if packet.Children[1].Tag == ApplicationModifyResponse {

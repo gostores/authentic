@@ -13,7 +13,7 @@ import (
 	"errors"
 	"log"
 
-	"github.com/gostores/authentic/asno"
+	"github.com/gostores/encoding/asn1"
 )
 
 // Attribute represents an LDAP attribute
@@ -24,12 +24,12 @@ type Attribute struct {
 	Vals []string
 }
 
-func (a *Attribute) encode() *asno.Packet {
-	seq := asno.Encode(asno.ClassUniversal, asno.TypeConstructed, asno.TagSequence, nil, "Attribute")
-	seq.AppendChild(asno.NewString(asno.ClassUniversal, asno.TypePrimitive, asno.TagOctetString, a.Type, "Type"))
-	set := asno.Encode(asno.ClassUniversal, asno.TypeConstructed, asno.TagSet, nil, "AttributeValue")
+func (a *Attribute) encode() *asn1.Packet {
+	seq := asn1.Encode(asn1.ClassUniversal, asn1.TypeConstructed, asn1.TagSequence, nil, "Attribute")
+	seq.AppendChild(asn1.NewString(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagOctetString, a.Type, "Type"))
+	set := asn1.Encode(asn1.ClassUniversal, asn1.TypeConstructed, asn1.TagSet, nil, "AttributeValue")
 	for _, value := range a.Vals {
-		set.AppendChild(asno.NewString(asno.ClassUniversal, asno.TypePrimitive, asno.TagOctetString, value, "Vals"))
+		set.AppendChild(asn1.NewString(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagOctetString, value, "Vals"))
 	}
 	seq.AppendChild(set)
 	return seq
@@ -43,10 +43,10 @@ type AddRequest struct {
 	Attributes []Attribute
 }
 
-func (a AddRequest) encode() *asno.Packet {
-	request := asno.Encode(asno.ClassApplication, asno.TypeConstructed, ApplicationAddRequest, nil, "Add Request")
-	request.AppendChild(asno.NewString(asno.ClassUniversal, asno.TypePrimitive, asno.TagOctetString, a.DN, "DN"))
-	attributes := asno.Encode(asno.ClassUniversal, asno.TypeConstructed, asno.TagSequence, nil, "Attributes")
+func (a AddRequest) encode() *asn1.Packet {
+	request := asn1.Encode(asn1.ClassApplication, asn1.TypeConstructed, ApplicationAddRequest, nil, "Add Request")
+	request.AppendChild(asn1.NewString(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagOctetString, a.DN, "DN"))
+	attributes := asn1.Encode(asn1.ClassUniversal, asn1.TypeConstructed, asn1.TagSequence, nil, "Attributes")
 	for _, attribute := range a.Attributes {
 		attributes.AppendChild(attribute.encode())
 	}
@@ -69,8 +69,8 @@ func NewAddRequest(dn string) *AddRequest {
 
 // Add performs the given AddRequest
 func (l *Conn) Add(addRequest *AddRequest) error {
-	packet := asno.Encode(asno.ClassUniversal, asno.TypeConstructed, asno.TagSequence, nil, "LDAP Request")
-	packet.AppendChild(asno.NewInteger(asno.ClassUniversal, asno.TypePrimitive, asno.TagInteger, l.nextMessageID(), "MessageID"))
+	packet := asn1.Encode(asn1.ClassUniversal, asn1.TypeConstructed, asn1.TagSequence, nil, "LDAP Request")
+	packet.AppendChild(asn1.NewInteger(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagInteger, l.nextMessageID(), "MessageID"))
 	packet.AppendChild(addRequest.encode())
 
 	l.Debug.PrintPacket(packet)
@@ -96,7 +96,7 @@ func (l *Conn) Add(addRequest *AddRequest) error {
 		if err := addLDAPDescriptions(packet); err != nil {
 			return err
 		}
-		asno.PrintPacket(packet)
+		asn1.PrintPacket(packet)
 	}
 
 	if packet.Children[1].Tag == ApplicationAddResponse {

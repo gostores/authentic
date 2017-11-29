@@ -3,7 +3,7 @@ package ldap
 import (
 	"fmt"
 
-	"github.com/gostores/authentic/asno"
+	"github.com/gostores/encoding/asn1"
 )
 
 // LDAP Result Codes
@@ -108,7 +108,7 @@ var LDAPResultCodeMap = map[uint8]string{
 	ErrorEmptyPassword:      "Empty password not allowed by the client",
 }
 
-func getLDAPResultCode(packet *asno.Packet) (code uint8, description string) {
+func getLDAPResultCode(packet *asn1.Packet) (code uint8, description string) {
 	if packet == nil {
 		return ErrorUnexpectedResponse, "Empty packet"
 	} else if len(packet.Children) >= 2 {
@@ -116,7 +116,7 @@ func getLDAPResultCode(packet *asno.Packet) (code uint8, description string) {
 		if response == nil {
 			return ErrorUnexpectedResponse, "Empty response in packet"
 		}
-		if response.ClassType == asno.ClassApplication && response.TagType == asno.TypeConstructed && len(response.Children) >= 3 {
+		if response.ClassType == asn1.ClassApplication && response.TagType == asn1.TypeConstructed && len(response.Children) >= 3 {
 			// Children[1].Children[2] is the diagnosticMessage which is guaranteed to exist as seen here: https://tools.ietf.org/html/rfc4511#section-4.1.9
 			return uint8(response.Children[0].Value.(int64)), response.Children[2].Value.(string)
 		}

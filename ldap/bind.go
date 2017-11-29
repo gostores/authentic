@@ -3,7 +3,7 @@ package ldap
 import (
 	"errors"
 
-	"github.com/gostores/authentic/asno"
+	"github.com/gostores/encoding/asn1"
 )
 
 // SimpleBindRequest represents a username/password bind operation
@@ -34,11 +34,11 @@ func NewSimpleBindRequest(username string, password string, controls []Control) 
 	}
 }
 
-func (bindRequest *SimpleBindRequest) encode() *asno.Packet {
-	request := asno.Encode(asno.ClassApplication, asno.TypeConstructed, ApplicationBindRequest, nil, "Bind Request")
-	request.AppendChild(asno.NewInteger(asno.ClassUniversal, asno.TypePrimitive, asno.TagInteger, 3, "Version"))
-	request.AppendChild(asno.NewString(asno.ClassUniversal, asno.TypePrimitive, asno.TagOctetString, bindRequest.Username, "User Name"))
-	request.AppendChild(asno.NewString(asno.ClassContext, asno.TypePrimitive, 0, bindRequest.Password, "Password"))
+func (bindRequest *SimpleBindRequest) encode() *asn1.Packet {
+	request := asn1.Encode(asn1.ClassApplication, asn1.TypeConstructed, ApplicationBindRequest, nil, "Bind Request")
+	request.AppendChild(asn1.NewInteger(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagInteger, 3, "Version"))
+	request.AppendChild(asn1.NewString(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagOctetString, bindRequest.Username, "User Name"))
+	request.AppendChild(asn1.NewString(asn1.ClassContext, asn1.TypePrimitive, 0, bindRequest.Password, "Password"))
 
 	request.AppendChild(encodeControls(bindRequest.Controls))
 
@@ -51,13 +51,13 @@ func (l *Conn) SimpleBind(simpleBindRequest *SimpleBindRequest) (*SimpleBindResu
 		return nil, NewError(ErrorEmptyPassword, errors.New("ldap: empty password not allowed by the client"))
 	}
 
-	packet := asno.Encode(asno.ClassUniversal, asno.TypeConstructed, asno.TagSequence, nil, "LDAP Request")
-	packet.AppendChild(asno.NewInteger(asno.ClassUniversal, asno.TypePrimitive, asno.TagInteger, l.nextMessageID(), "MessageID"))
+	packet := asn1.Encode(asn1.ClassUniversal, asn1.TypeConstructed, asn1.TagSequence, nil, "LDAP Request")
+	packet.AppendChild(asn1.NewInteger(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagInteger, l.nextMessageID(), "MessageID"))
 	encodedBindRequest := simpleBindRequest.encode()
 	packet.AppendChild(encodedBindRequest)
 
 	if l.Debug {
-		asno.PrintPacket(packet)
+		asn1.PrintPacket(packet)
 	}
 
 	msgCtx, err := l.sendMessage(packet)
@@ -80,7 +80,7 @@ func (l *Conn) SimpleBind(simpleBindRequest *SimpleBindRequest) (*SimpleBindResu
 		if err := addLDAPDescriptions(packet); err != nil {
 			return nil, err
 		}
-		asno.PrintPacket(packet)
+		asn1.PrintPacket(packet)
 	}
 
 	result := &SimpleBindResult{

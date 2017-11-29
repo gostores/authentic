@@ -9,7 +9,7 @@ import (
 	"errors"
 	"log"
 
-	"github.com/gostores/authentic/asno"
+	"github.com/gostores/encoding/asn1"
 )
 
 // DelRequest implements an LDAP deletion request
@@ -20,8 +20,8 @@ type DelRequest struct {
 	Controls []Control
 }
 
-func (d DelRequest) encode() *asno.Packet {
-	request := asno.Encode(asno.ClassApplication, asno.TypePrimitive, ApplicationDelRequest, d.DN, "Del Request")
+func (d DelRequest) encode() *asn1.Packet {
+	request := asn1.Encode(asn1.ClassApplication, asn1.TypePrimitive, ApplicationDelRequest, d.DN, "Del Request")
 	request.Data.Write([]byte(d.DN))
 	return request
 }
@@ -37,8 +37,8 @@ func NewDelRequest(DN string,
 
 // Del executes the given delete request
 func (l *Conn) Del(delRequest *DelRequest) error {
-	packet := asno.Encode(asno.ClassUniversal, asno.TypeConstructed, asno.TagSequence, nil, "LDAP Request")
-	packet.AppendChild(asno.NewInteger(asno.ClassUniversal, asno.TypePrimitive, asno.TagInteger, l.nextMessageID(), "MessageID"))
+	packet := asn1.Encode(asn1.ClassUniversal, asn1.TypeConstructed, asn1.TagSequence, nil, "LDAP Request")
+	packet.AppendChild(asn1.NewInteger(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagInteger, l.nextMessageID(), "MessageID"))
 	packet.AppendChild(delRequest.encode())
 	if delRequest.Controls != nil {
 		packet.AppendChild(encodeControls(delRequest.Controls))
@@ -67,7 +67,7 @@ func (l *Conn) Del(delRequest *DelRequest) error {
 		if err := addLDAPDescriptions(packet); err != nil {
 			return err
 		}
-		asno.PrintPacket(packet)
+		asn1.PrintPacket(packet)
 	}
 
 	if packet.Children[1].Tag == ApplicationDelResponse {

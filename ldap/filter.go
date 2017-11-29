@@ -8,7 +8,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/gostores/authentic/asno"
+	"github.com/gostores/encoding/asn1"
 )
 
 // Filter choices
@@ -70,7 +70,7 @@ var MatchingRuleAssertionMap = map[uint64]string{
 }
 
 // CompileFilter converts a string representation of a filter into a BER-encoded packet
-func CompileFilter(filter string) (*asno.Packet, error) {
+func CompileFilter(filter string) (*asn1.Packet, error) {
 	if len(filter) == 0 || filter[0] != '(' {
 		return nil, NewError(ErrorFilterCompile, errors.New("ldap: filter does not start with an '('"))
 	}
@@ -88,7 +88,7 @@ func CompileFilter(filter string) (*asno.Packet, error) {
 }
 
 // DecompileFilter converts a packet representation of a filter into a string representation
-func DecompileFilter(packet *asno.Packet) (ret string, err error) {
+func DecompileFilter(packet *asn1.Packet) (ret string, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = NewError(ErrorFilterDecompile, errors.New("ldap: error decompiling filter"))
@@ -126,36 +126,36 @@ func DecompileFilter(packet *asno.Packet) (ret string, err error) {
 		ret += childStr
 
 	case FilterSubstrings:
-		ret += asno.DecodeString(packet.Children[0].Data.Bytes())
+		ret += asn1.DecodeString(packet.Children[0].Data.Bytes())
 		ret += "="
 		for i, child := range packet.Children[1].Children {
 			if i == 0 && child.Tag != FilterSubstringsInitial {
 				ret += "*"
 			}
-			ret += EscapeFilter(asno.DecodeString(child.Data.Bytes()))
+			ret += EscapeFilter(asn1.DecodeString(child.Data.Bytes()))
 			if child.Tag != FilterSubstringsFinal {
 				ret += "*"
 			}
 		}
 	case FilterEqualityMatch:
-		ret += asno.DecodeString(packet.Children[0].Data.Bytes())
+		ret += asn1.DecodeString(packet.Children[0].Data.Bytes())
 		ret += "="
-		ret += EscapeFilter(asno.DecodeString(packet.Children[1].Data.Bytes()))
+		ret += EscapeFilter(asn1.DecodeString(packet.Children[1].Data.Bytes()))
 	case FilterGreaterOrEqual:
-		ret += asno.DecodeString(packet.Children[0].Data.Bytes())
+		ret += asn1.DecodeString(packet.Children[0].Data.Bytes())
 		ret += ">="
-		ret += EscapeFilter(asno.DecodeString(packet.Children[1].Data.Bytes()))
+		ret += EscapeFilter(asn1.DecodeString(packet.Children[1].Data.Bytes()))
 	case FilterLessOrEqual:
-		ret += asno.DecodeString(packet.Children[0].Data.Bytes())
+		ret += asn1.DecodeString(packet.Children[0].Data.Bytes())
 		ret += "<="
-		ret += EscapeFilter(asno.DecodeString(packet.Children[1].Data.Bytes()))
+		ret += EscapeFilter(asn1.DecodeString(packet.Children[1].Data.Bytes()))
 	case FilterPresent:
-		ret += asno.DecodeString(packet.Data.Bytes())
+		ret += asn1.DecodeString(packet.Data.Bytes())
 		ret += "=*"
 	case FilterApproxMatch:
-		ret += asno.DecodeString(packet.Children[0].Data.Bytes())
+		ret += asn1.DecodeString(packet.Children[0].Data.Bytes())
 		ret += "~="
-		ret += EscapeFilter(asno.DecodeString(packet.Children[1].Data.Bytes()))
+		ret += EscapeFilter(asn1.DecodeString(packet.Children[1].Data.Bytes()))
 	case FilterExtensibleMatch:
 		attr := ""
 		dnAttributes := false
@@ -165,11 +165,11 @@ func DecompileFilter(packet *asno.Packet) (ret string, err error) {
 		for _, child := range packet.Children {
 			switch child.Tag {
 			case MatchingRuleAssertionMatchingRule:
-				matchingRule = asno.DecodeString(child.Data.Bytes())
+				matchingRule = asn1.DecodeString(child.Data.Bytes())
 			case MatchingRuleAssertionType:
-				attr = asno.DecodeString(child.Data.Bytes())
+				attr = asn1.DecodeString(child.Data.Bytes())
 			case MatchingRuleAssertionMatchValue:
-				value = asno.DecodeString(child.Data.Bytes())
+				value = asn1.DecodeString(child.Data.Bytes())
 			case MatchingRuleAssertionDNAttributes:
 				dnAttributes = child.Value.(bool)
 			}
@@ -193,7 +193,7 @@ func DecompileFilter(packet *asno.Packet) (ret string, err error) {
 	return
 }
 
-func compileFilterSet(filter string, pos int, parent *asno.Packet) (int, error) {
+func compileFilterSet(filter string, pos int, parent *asn1.Packet) (int, error) {
 	for pos < len(filter) && filter[pos] == '(' {
 		child, newPos, err := compileFilter(filter, pos+1)
 		if err != nil {
@@ -209,9 +209,9 @@ func compileFilterSet(filter string, pos int, parent *asno.Packet) (int, error) 
 	return pos + 1, nil
 }
 
-func compileFilter(filter string, pos int) (*asno.Packet, int, error) {
+func compileFilter(filter string, pos int) (*asn1.Packet, int, error) {
 	var (
-		packet *asno.Packet
+		packet *asn1.Packet
 		err    error
 	)
 
@@ -232,16 +232,16 @@ func compileFilter(filter string, pos int) (*asno.Packet, int, error) {
 		newPos++
 		return packet, newPos, err
 	case '&':
-		packet = asno.Encode(asno.ClassContext, asno.TypeConstructed, FilterAnd, nil, FilterMap[FilterAnd])
+		packet = asn1.Encode(asn1.ClassContext, asn1.TypeConstructed, FilterAnd, nil, FilterMap[FilterAnd])
 		newPos, err = compileFilterSet(filter, pos+currentWidth, packet)
 		return packet, newPos, err
 	case '|':
-		packet = asno.Encode(asno.ClassContext, asno.TypeConstructed, FilterOr, nil, FilterMap[FilterOr])
+		packet = asn1.Encode(asn1.ClassContext, asn1.TypeConstructed, FilterOr, nil, FilterMap[FilterOr])
 		newPos, err = compileFilterSet(filter, pos+currentWidth, packet)
 		return packet, newPos, err
 	case '!':
-		packet = asno.Encode(asno.ClassContext, asno.TypeConstructed, FilterNot, nil, FilterMap[FilterNot])
-		var child *asno.Packet
+		packet = asn1.Encode(asn1.ClassContext, asn1.TypeConstructed, FilterNot, nil, FilterMap[FilterNot])
+		var child *asn1.Packet
 		child, newPos, err = compileFilter(filter, pos+currentWidth)
 		packet.AppendChild(child)
 		return packet, newPos, err
@@ -274,51 +274,51 @@ func compileFilter(filter string, pos int) (*asno.Packet, int, error) {
 				switch {
 				// Extensible rule, with only DN-matching
 				case currentRune == ':' && strings.HasPrefix(remainingFilter, ":dn:="):
-					packet = asno.Encode(asno.ClassContext, asno.TypeConstructed, FilterExtensibleMatch, nil, FilterMap[FilterExtensibleMatch])
+					packet = asn1.Encode(asn1.ClassContext, asn1.TypeConstructed, FilterExtensibleMatch, nil, FilterMap[FilterExtensibleMatch])
 					extensibleDNAttributes = true
 					state = stateReadingCondition
 					newPos += 5
 
 				// Extensible rule, with DN-matching and a matching OID
 				case currentRune == ':' && strings.HasPrefix(remainingFilter, ":dn:"):
-					packet = asno.Encode(asno.ClassContext, asno.TypeConstructed, FilterExtensibleMatch, nil, FilterMap[FilterExtensibleMatch])
+					packet = asn1.Encode(asn1.ClassContext, asn1.TypeConstructed, FilterExtensibleMatch, nil, FilterMap[FilterExtensibleMatch])
 					extensibleDNAttributes = true
 					state = stateReadingExtensibleMatchingRule
 					newPos += 4
 
 				// Extensible rule, with attr only
 				case currentRune == ':' && strings.HasPrefix(remainingFilter, ":="):
-					packet = asno.Encode(asno.ClassContext, asno.TypeConstructed, FilterExtensibleMatch, nil, FilterMap[FilterExtensibleMatch])
+					packet = asn1.Encode(asn1.ClassContext, asn1.TypeConstructed, FilterExtensibleMatch, nil, FilterMap[FilterExtensibleMatch])
 					state = stateReadingCondition
 					newPos += 2
 
 				// Extensible rule, with no DN attribute matching
 				case currentRune == ':':
-					packet = asno.Encode(asno.ClassContext, asno.TypeConstructed, FilterExtensibleMatch, nil, FilterMap[FilterExtensibleMatch])
+					packet = asn1.Encode(asn1.ClassContext, asn1.TypeConstructed, FilterExtensibleMatch, nil, FilterMap[FilterExtensibleMatch])
 					state = stateReadingExtensibleMatchingRule
 					newPos++
 
 				// Equality condition
 				case currentRune == '=':
-					packet = asno.Encode(asno.ClassContext, asno.TypeConstructed, FilterEqualityMatch, nil, FilterMap[FilterEqualityMatch])
+					packet = asn1.Encode(asn1.ClassContext, asn1.TypeConstructed, FilterEqualityMatch, nil, FilterMap[FilterEqualityMatch])
 					state = stateReadingCondition
 					newPos++
 
 				// Greater-than or equal
 				case currentRune == '>' && strings.HasPrefix(remainingFilter, ">="):
-					packet = asno.Encode(asno.ClassContext, asno.TypeConstructed, FilterGreaterOrEqual, nil, FilterMap[FilterGreaterOrEqual])
+					packet = asn1.Encode(asn1.ClassContext, asn1.TypeConstructed, FilterGreaterOrEqual, nil, FilterMap[FilterGreaterOrEqual])
 					state = stateReadingCondition
 					newPos += 2
 
 				// Less-than or equal
 				case currentRune == '<' && strings.HasPrefix(remainingFilter, "<="):
-					packet = asno.Encode(asno.ClassContext, asno.TypeConstructed, FilterLessOrEqual, nil, FilterMap[FilterLessOrEqual])
+					packet = asn1.Encode(asn1.ClassContext, asn1.TypeConstructed, FilterLessOrEqual, nil, FilterMap[FilterLessOrEqual])
 					state = stateReadingCondition
 					newPos += 2
 
 				// Approx
 				case currentRune == '~' && strings.HasPrefix(remainingFilter, "~="):
-					packet = asno.Encode(asno.ClassContext, asno.TypeConstructed, FilterApproxMatch, nil, FilterMap[FilterApproxMatch])
+					packet = asn1.Encode(asn1.ClassContext, asn1.TypeConstructed, FilterApproxMatch, nil, FilterMap[FilterApproxMatch])
 					state = stateReadingCondition
 					newPos += 2
 
@@ -369,12 +369,12 @@ func compileFilter(filter string, pos int) (*asno.Packet, int, error) {
 
 			// Include the matching rule oid, if specified
 			if len(extensibleMatchingRule) > 0 {
-				packet.AppendChild(asno.NewString(asno.ClassContext, asno.TypePrimitive, MatchingRuleAssertionMatchingRule, extensibleMatchingRule, MatchingRuleAssertionMap[MatchingRuleAssertionMatchingRule]))
+				packet.AppendChild(asn1.NewString(asn1.ClassContext, asn1.TypePrimitive, MatchingRuleAssertionMatchingRule, extensibleMatchingRule, MatchingRuleAssertionMap[MatchingRuleAssertionMatchingRule]))
 			}
 
 			// Include the attribute, if specified
 			if len(attribute) > 0 {
-				packet.AppendChild(asno.NewString(asno.ClassContext, asno.TypePrimitive, MatchingRuleAssertionType, attribute, MatchingRuleAssertionMap[MatchingRuleAssertionType]))
+				packet.AppendChild(asn1.NewString(asn1.ClassContext, asn1.TypePrimitive, MatchingRuleAssertionType, attribute, MatchingRuleAssertionMap[MatchingRuleAssertionType]))
 			}
 
 			// Add the value (only required child)
@@ -382,26 +382,26 @@ func compileFilter(filter string, pos int) (*asno.Packet, int, error) {
 			if encodeErr != nil {
 				return packet, newPos, encodeErr
 			}
-			packet.AppendChild(asno.NewString(asno.ClassContext, asno.TypePrimitive, MatchingRuleAssertionMatchValue, encodedString, MatchingRuleAssertionMap[MatchingRuleAssertionMatchValue]))
+			packet.AppendChild(asn1.NewString(asn1.ClassContext, asn1.TypePrimitive, MatchingRuleAssertionMatchValue, encodedString, MatchingRuleAssertionMap[MatchingRuleAssertionMatchValue]))
 
 			// Defaults to false, so only include in the sequence if true
 			if extensibleDNAttributes {
-				packet.AppendChild(asno.NewBoolean(asno.ClassContext, asno.TypePrimitive, MatchingRuleAssertionDNAttributes, extensibleDNAttributes, MatchingRuleAssertionMap[MatchingRuleAssertionDNAttributes]))
+				packet.AppendChild(asn1.NewBoolean(asn1.ClassContext, asn1.TypePrimitive, MatchingRuleAssertionDNAttributes, extensibleDNAttributes, MatchingRuleAssertionMap[MatchingRuleAssertionDNAttributes]))
 			}
 
 		case packet.Tag == FilterEqualityMatch && condition == "*":
-			packet = asno.NewString(asno.ClassContext, asno.TypePrimitive, FilterPresent, attribute, FilterMap[FilterPresent])
+			packet = asn1.NewString(asn1.ClassContext, asn1.TypePrimitive, FilterPresent, attribute, FilterMap[FilterPresent])
 		case packet.Tag == FilterEqualityMatch && strings.Contains(condition, "*"):
-			packet.AppendChild(asno.NewString(asno.ClassUniversal, asno.TypePrimitive, asno.TagOctetString, attribute, "Attribute"))
+			packet.AppendChild(asn1.NewString(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagOctetString, attribute, "Attribute"))
 			packet.Tag = FilterSubstrings
 			packet.Description = FilterMap[uint64(packet.Tag)]
-			seq := asno.Encode(asno.ClassUniversal, asno.TypeConstructed, asno.TagSequence, nil, "Substrings")
+			seq := asn1.Encode(asn1.ClassUniversal, asn1.TypeConstructed, asn1.TagSequence, nil, "Substrings")
 			parts := strings.Split(condition, "*")
 			for i, part := range parts {
 				if part == "" {
 					continue
 				}
-				var tag asno.Tag
+				var tag asn1.Tag
 				switch i {
 				case 0:
 					tag = FilterSubstringsInitial
@@ -414,7 +414,7 @@ func compileFilter(filter string, pos int) (*asno.Packet, int, error) {
 				if encodeErr != nil {
 					return packet, newPos, encodeErr
 				}
-				seq.AppendChild(asno.NewString(asno.ClassContext, asno.TypePrimitive, tag, encodedString, FilterSubstringsMap[uint64(tag)]))
+				seq.AppendChild(asn1.NewString(asn1.ClassContext, asn1.TypePrimitive, tag, encodedString, FilterSubstringsMap[uint64(tag)]))
 			}
 			packet.AppendChild(seq)
 		default:
@@ -422,8 +422,8 @@ func compileFilter(filter string, pos int) (*asno.Packet, int, error) {
 			if encodeErr != nil {
 				return packet, newPos, encodeErr
 			}
-			packet.AppendChild(asno.NewString(asno.ClassUniversal, asno.TypePrimitive, asno.TagOctetString, attribute, "Attribute"))
-			packet.AppendChild(asno.NewString(asno.ClassUniversal, asno.TypePrimitive, asno.TagOctetString, encodedString, "Condition"))
+			packet.AppendChild(asn1.NewString(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagOctetString, attribute, "Attribute"))
+			packet.AppendChild(asn1.NewString(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagOctetString, encodedString, "Condition"))
 		}
 
 		newPos += currentWidth

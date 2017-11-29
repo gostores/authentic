@@ -23,21 +23,21 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/gostores/authentic/asno"
+	"github.com/gostores/encoding/asn1"
 )
 
 // Compare checks to see if the attribute of the dn matches value. Returns true if it does otherwise
 // false with any error that occurs if any.
 func (l *Conn) Compare(dn, attribute, value string) (bool, error) {
-	packet := asno.Encode(asno.ClassUniversal, asno.TypeConstructed, asno.TagSequence, nil, "LDAP Request")
-	packet.AppendChild(asno.NewInteger(asno.ClassUniversal, asno.TypePrimitive, asno.TagInteger, l.nextMessageID(), "MessageID"))
+	packet := asn1.Encode(asn1.ClassUniversal, asn1.TypeConstructed, asn1.TagSequence, nil, "LDAP Request")
+	packet.AppendChild(asn1.NewInteger(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagInteger, l.nextMessageID(), "MessageID"))
 
-	request := asno.Encode(asno.ClassApplication, asno.TypeConstructed, ApplicationCompareRequest, nil, "Compare Request")
-	request.AppendChild(asno.NewString(asno.ClassUniversal, asno.TypePrimitive, asno.TagOctetString, dn, "DN"))
+	request := asn1.Encode(asn1.ClassApplication, asn1.TypeConstructed, ApplicationCompareRequest, nil, "Compare Request")
+	request.AppendChild(asn1.NewString(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagOctetString, dn, "DN"))
 
-	ava := asno.Encode(asno.ClassUniversal, asno.TypeConstructed, asno.TagSequence, nil, "AttributeValueAssertion")
-	ava.AppendChild(asno.NewString(asno.ClassUniversal, asno.TypePrimitive, asno.TagOctetString, attribute, "AttributeDesc"))
-	ava.AppendChild(asno.Encode(asno.ClassUniversal, asno.TypeConstructed, asno.TagOctetString, value, "AssertionValue"))
+	ava := asn1.Encode(asn1.ClassUniversal, asn1.TypeConstructed, asn1.TagSequence, nil, "AttributeValueAssertion")
+	ava.AppendChild(asn1.NewString(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagOctetString, attribute, "AttributeDesc"))
+	ava.AppendChild(asn1.Encode(asn1.ClassUniversal, asn1.TypeConstructed, asn1.TagOctetString, value, "AssertionValue"))
 	request.AppendChild(ava)
 	packet.AppendChild(request)
 
@@ -64,7 +64,7 @@ func (l *Conn) Compare(dn, attribute, value string) (bool, error) {
 		if err := addLDAPDescriptions(packet); err != nil {
 			return false, err
 		}
-		asno.PrintPacket(packet)
+		asn1.PrintPacket(packet)
 	}
 
 	if packet.Children[1].Tag == ApplicationCompareResponse {

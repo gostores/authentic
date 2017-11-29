@@ -10,7 +10,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/gostores/authentic/asno"
+	"github.com/gostores/encoding/asn1"
 )
 
 const (
@@ -29,13 +29,13 @@ const (
 // PacketResponse contains the packet or error encountered reading a response
 type PacketResponse struct {
 	// Packet is the packet read from the server
-	Packet *asno.Packet
+	Packet *asn1.Packet
 	// Error is an error encountered while reading
 	Error error
 }
 
 // ReadPacket returns the packet or an error
-func (pr *PacketResponse) ReadPacket() (*asno.Packet, error) {
+func (pr *PacketResponse) ReadPacket() (*asn1.Packet, error) {
 	if (pr == nil) || (pr.Packet == nil && pr.Error == nil) {
 		return nil, NewError(ErrorNetwork, errors.New("ldap: could not retrieve response"))
 	}
@@ -65,7 +65,7 @@ func (msgCtx *messageContext) sendResponse(packet *PacketResponse) {
 type messagePacket struct {
 	Op        int
 	MessageID int64
-	Packet    *asno.Packet
+	Packet    *asn1.Packet
 	Context   *messageContext
 }
 
@@ -205,10 +205,10 @@ func (l *Conn) StartTLS(config *tls.Config) error {
 		return NewError(ErrorNetwork, errors.New("ldap: already encrypted"))
 	}
 
-	packet := asno.Encode(asno.ClassUniversal, asno.TypeConstructed, asno.TagSequence, nil, "LDAP Request")
-	packet.AppendChild(asno.NewInteger(asno.ClassUniversal, asno.TypePrimitive, asno.TagInteger, l.nextMessageID(), "MessageID"))
-	request := asno.Encode(asno.ClassApplication, asno.TypeConstructed, ApplicationExtendedRequest, nil, "Start TLS")
-	request.AppendChild(asno.NewString(asno.ClassContext, asno.TypePrimitive, 0, "1.3.6.1.4.1.1466.20037", "TLS Extended Command"))
+	packet := asn1.Encode(asn1.ClassUniversal, asn1.TypeConstructed, asn1.TagSequence, nil, "LDAP Request")
+	packet.AppendChild(asn1.NewInteger(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagInteger, l.nextMessageID(), "MessageID"))
+	request := asn1.Encode(asn1.ClassApplication, asn1.TypeConstructed, ApplicationExtendedRequest, nil, "Start TLS")
+	request.AppendChild(asn1.NewString(asn1.ClassContext, asn1.TypePrimitive, 0, "1.3.6.1.4.1.1466.20037", "TLS Extended Command"))
 	packet.AppendChild(request)
 	l.Debug.PrintPacket(packet)
 
@@ -235,7 +235,7 @@ func (l *Conn) StartTLS(config *tls.Config) error {
 			l.Close()
 			return err
 		}
-		asno.PrintPacket(packet)
+		asn1.PrintPacket(packet)
 	}
 
 	if resultCode, message := getLDAPResultCode(packet); resultCode == LDAPResultSuccess {
@@ -256,11 +256,11 @@ func (l *Conn) StartTLS(config *tls.Config) error {
 	return nil
 }
 
-func (l *Conn) sendMessage(packet *asno.Packet) (*messageContext, error) {
+func (l *Conn) sendMessage(packet *asn1.Packet) (*messageContext, error) {
 	return l.sendMessageWithFlags(packet, 0)
 }
 
-func (l *Conn) sendMessageWithFlags(packet *asno.Packet, flags sendMessageFlags) (*messageContext, error) {
+func (l *Conn) sendMessageWithFlags(packet *asn1.Packet, flags sendMessageFlags) (*messageContext, error) {
 	if l.isClosing() {
 		return nil, NewError(ErrorNetwork, errors.New("ldap: connection closed"))
 	}
@@ -397,7 +397,7 @@ func (l *Conn) processMessages() {
 					msgCtx.sendResponse(&PacketResponse{message.Packet, nil})
 				} else {
 					log.Printf("Received unexpected message %d, %v", message.MessageID, l.isClosing())
-					asno.PrintPacket(message.Packet)
+					asn1.PrintPacket(message.Packet)
 				}
 			case MessageTimeout:
 				// Handle the timeout by closing the channel
@@ -435,7 +435,7 @@ func (l *Conn) reader() {
 			l.Debug.Printf("reader clean stopping (without closing the connection)")
 			return
 		}
-		packet, err := asno.ReadPacket(l.conn)
+		packet, err := asn1.ReadPacket(l.conn)
 		if err != nil {
 			// A read error is expected here if we are closing the connection...
 			if !l.isClosing() {

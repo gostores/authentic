@@ -9,7 +9,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/gostores/authentic/asno"
+	"github.com/gostores/encoding/asn1"
 )
 
 const (
@@ -34,19 +34,19 @@ type PasswordModifyResult struct {
 	GeneratedPassword string
 }
 
-func (r *PasswordModifyRequest) encode() (*asno.Packet, error) {
-	request := asno.Encode(asno.ClassApplication, asno.TypeConstructed, ApplicationExtendedRequest, nil, "Password Modify Extended Operation")
-	request.AppendChild(asno.NewString(asno.ClassContext, asno.TypePrimitive, 0, passwordModifyOID, "Extended Request Name: Password Modify OID"))
-	extendedRequestValue := asno.Encode(asno.ClassContext, asno.TypePrimitive, 1, nil, "Extended Request Value: Password Modify Request")
-	passwordModifyRequestValue := asno.Encode(asno.ClassUniversal, asno.TypeConstructed, asno.TagSequence, nil, "Password Modify Request")
+func (r *PasswordModifyRequest) encode() (*asn1.Packet, error) {
+	request := asn1.Encode(asn1.ClassApplication, asn1.TypeConstructed, ApplicationExtendedRequest, nil, "Password Modify Extended Operation")
+	request.AppendChild(asn1.NewString(asn1.ClassContext, asn1.TypePrimitive, 0, passwordModifyOID, "Extended Request Name: Password Modify OID"))
+	extendedRequestValue := asn1.Encode(asn1.ClassContext, asn1.TypePrimitive, 1, nil, "Extended Request Value: Password Modify Request")
+	passwordModifyRequestValue := asn1.Encode(asn1.ClassUniversal, asn1.TypeConstructed, asn1.TagSequence, nil, "Password Modify Request")
 	if r.UserIdentity != "" {
-		passwordModifyRequestValue.AppendChild(asno.NewString(asno.ClassContext, asno.TypePrimitive, 0, r.UserIdentity, "User Identity"))
+		passwordModifyRequestValue.AppendChild(asn1.NewString(asn1.ClassContext, asn1.TypePrimitive, 0, r.UserIdentity, "User Identity"))
 	}
 	if r.OldPassword != "" {
-		passwordModifyRequestValue.AppendChild(asno.NewString(asno.ClassContext, asno.TypePrimitive, 1, r.OldPassword, "Old Password"))
+		passwordModifyRequestValue.AppendChild(asn1.NewString(asn1.ClassContext, asn1.TypePrimitive, 1, r.OldPassword, "Old Password"))
 	}
 	if r.NewPassword != "" {
-		passwordModifyRequestValue.AppendChild(asno.NewString(asno.ClassContext, asno.TypePrimitive, 2, r.NewPassword, "New Password"))
+		passwordModifyRequestValue.AppendChild(asn1.NewString(asn1.ClassContext, asn1.TypePrimitive, 2, r.NewPassword, "New Password"))
 	}
 
 	extendedRequestValue.AppendChild(passwordModifyRequestValue)
@@ -82,8 +82,8 @@ func NewPasswordModifyRequest(userIdentity string, oldPassword string, newPasswo
 
 // PasswordModify performs the modification request
 func (l *Conn) PasswordModify(passwordModifyRequest *PasswordModifyRequest) (*PasswordModifyResult, error) {
-	packet := asno.Encode(asno.ClassUniversal, asno.TypeConstructed, asno.TagSequence, nil, "LDAP Request")
-	packet.AppendChild(asno.NewInteger(asno.ClassUniversal, asno.TypePrimitive, asno.TagInteger, l.nextMessageID(), "MessageID"))
+	packet := asn1.Encode(asn1.ClassUniversal, asn1.TypeConstructed, asn1.TagSequence, nil, "LDAP Request")
+	packet.AppendChild(asn1.NewInteger(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagInteger, l.nextMessageID(), "MessageID"))
 
 	encodedPasswordModifyRequest, err := passwordModifyRequest.encode()
 	if err != nil {
@@ -120,7 +120,7 @@ func (l *Conn) PasswordModify(passwordModifyRequest *PasswordModifyRequest) (*Pa
 		if err := addLDAPDescriptions(packet); err != nil {
 			return nil, err
 		}
-		asno.PrintPacket(packet)
+		asn1.PrintPacket(packet)
 	}
 
 	if packet.Children[1].Tag == ApplicationExtendedResponse {
@@ -135,10 +135,10 @@ func (l *Conn) PasswordModify(passwordModifyRequest *PasswordModifyRequest) (*Pa
 	extendedResponse := packet.Children[1]
 	for _, child := range extendedResponse.Children {
 		if child.Tag == 11 {
-			passwordModifyResponseValue := asno.DecodePacket(child.Data.Bytes())
+			passwordModifyResponseValue := asn1.DecodePacket(child.Data.Bytes())
 			if len(passwordModifyResponseValue.Children) == 1 {
 				if passwordModifyResponseValue.Children[0].Tag == 0 {
-					result.GeneratedPassword = asno.DecodeString(passwordModifyResponseValue.Children[0].Data.Bytes())
+					result.GeneratedPassword = asn1.DecodeString(passwordModifyResponseValue.Children[0].Data.Bytes())
 				}
 			}
 		}

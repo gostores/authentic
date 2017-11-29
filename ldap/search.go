@@ -61,7 +61,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/gostores/authentic/asno"
+	"github.com/gostores/encoding/asn1"
 )
 
 // scope choices
@@ -246,14 +246,14 @@ type SearchRequest struct {
 	Controls     []Control
 }
 
-func (s *SearchRequest) encode() (*asno.Packet, error) {
-	request := asno.Encode(asno.ClassApplication, asno.TypeConstructed, ApplicationSearchRequest, nil, "Search Request")
-	request.AppendChild(asno.NewString(asno.ClassUniversal, asno.TypePrimitive, asno.TagOctetString, s.BaseDN, "Base DN"))
-	request.AppendChild(asno.NewInteger(asno.ClassUniversal, asno.TypePrimitive, asno.TagEnumerated, uint64(s.Scope), "Scope"))
-	request.AppendChild(asno.NewInteger(asno.ClassUniversal, asno.TypePrimitive, asno.TagEnumerated, uint64(s.DerefAliases), "Deref Aliases"))
-	request.AppendChild(asno.NewInteger(asno.ClassUniversal, asno.TypePrimitive, asno.TagInteger, uint64(s.SizeLimit), "Size Limit"))
-	request.AppendChild(asno.NewInteger(asno.ClassUniversal, asno.TypePrimitive, asno.TagInteger, uint64(s.TimeLimit), "Time Limit"))
-	request.AppendChild(asno.NewBoolean(asno.ClassUniversal, asno.TypePrimitive, asno.TagBoolean, s.TypesOnly, "Types Only"))
+func (s *SearchRequest) encode() (*asn1.Packet, error) {
+	request := asn1.Encode(asn1.ClassApplication, asn1.TypeConstructed, ApplicationSearchRequest, nil, "Search Request")
+	request.AppendChild(asn1.NewString(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagOctetString, s.BaseDN, "Base DN"))
+	request.AppendChild(asn1.NewInteger(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagEnumerated, uint64(s.Scope), "Scope"))
+	request.AppendChild(asn1.NewInteger(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagEnumerated, uint64(s.DerefAliases), "Deref Aliases"))
+	request.AppendChild(asn1.NewInteger(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagInteger, uint64(s.SizeLimit), "Size Limit"))
+	request.AppendChild(asn1.NewInteger(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagInteger, uint64(s.TimeLimit), "Time Limit"))
+	request.AppendChild(asn1.NewBoolean(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagBoolean, s.TypesOnly, "Types Only"))
 	// compile and encode filter
 	filterPacket, err := CompileFilter(s.Filter)
 	if err != nil {
@@ -261,9 +261,9 @@ func (s *SearchRequest) encode() (*asno.Packet, error) {
 	}
 	request.AppendChild(filterPacket)
 	// encode attributes
-	attributesPacket := asno.Encode(asno.ClassUniversal, asno.TypeConstructed, asno.TagSequence, nil, "Attributes")
+	attributesPacket := asn1.Encode(asn1.ClassUniversal, asn1.TypeConstructed, asn1.TagSequence, nil, "Attributes")
 	for _, attribute := range s.Attributes {
-		attributesPacket.AppendChild(asno.NewString(asno.ClassUniversal, asno.TypePrimitive, asno.TagOctetString, attribute, "Attribute"))
+		attributesPacket.AppendChild(asn1.NewString(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagOctetString, attribute, "Attribute"))
 	}
 	request.AppendChild(attributesPacket)
 	return request, nil
@@ -366,8 +366,8 @@ func (l *Conn) SearchWithPaging(searchRequest *SearchRequest, pagingSize uint32)
 
 // Search performs the given search request
 func (l *Conn) Search(searchRequest *SearchRequest) (*SearchResult, error) {
-	packet := asno.Encode(asno.ClassUniversal, asno.TypeConstructed, asno.TagSequence, nil, "LDAP Request")
-	packet.AppendChild(asno.NewInteger(asno.ClassUniversal, asno.TypePrimitive, asno.TagInteger, l.nextMessageID(), "MessageID"))
+	packet := asn1.Encode(asn1.ClassUniversal, asn1.TypeConstructed, asn1.TagSequence, nil, "LDAP Request")
+	packet.AppendChild(asn1.NewInteger(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagInteger, l.nextMessageID(), "MessageID"))
 	// encode search request
 	encodedSearchRequest, err := searchRequest.encode()
 	if err != nil {
@@ -409,7 +409,7 @@ func (l *Conn) Search(searchRequest *SearchRequest) (*SearchResult, error) {
 			if err := addLDAPDescriptions(packet); err != nil {
 				return nil, err
 			}
-			asno.PrintPacket(packet)
+			asn1.PrintPacket(packet)
 		}
 
 		switch packet.Children[1].Tag {

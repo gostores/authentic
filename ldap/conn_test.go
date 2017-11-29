@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gostores/authentic/asno"
+	"github.com/gostores/encoding/asn1"
 )
 
 func TestUnresponsiveConnection(t *testing.T) {
@@ -32,10 +32,10 @@ func TestUnresponsiveConnection(t *testing.T) {
 	defer conn.Close()
 
 	// Mock a packet
-	packet := asno.Encode(asno.ClassUniversal, asno.TypeConstructed, asno.TagSequence, nil, "LDAP Request")
-	packet.AppendChild(asno.NewInteger(asno.ClassUniversal, asno.TypePrimitive, asno.TagInteger, conn.nextMessageID(), "MessageID"))
-	bindRequest := asno.Encode(asno.ClassApplication, asno.TypeConstructed, ApplicationBindRequest, nil, "Bind Request")
-	bindRequest.AppendChild(asno.NewInteger(asno.ClassUniversal, asno.TypePrimitive, asno.TagInteger, 3, "Version"))
+	packet := asn1.Encode(asn1.ClassUniversal, asn1.TypeConstructed, asn1.TagSequence, nil, "LDAP Request")
+	packet.AppendChild(asn1.NewInteger(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagInteger, conn.nextMessageID(), "MessageID"))
+	bindRequest := asn1.Encode(asn1.ClassApplication, asn1.TypeConstructed, ApplicationBindRequest, nil, "Bind Request")
+	bindRequest.AppendChild(asn1.NewInteger(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagInteger, 3, "Version"))
 	packet.AppendChild(bindRequest)
 
 	// Send packet and test response
@@ -110,8 +110,8 @@ func testSendRequest(t *testing.T, ptc *packetTranslatorConn, conn *Conn) (msgCt
 		msgID = conn.nextMessageID()
 	})
 
-	requestPacket := asno.Encode(asno.ClassUniversal, asno.TypeConstructed, asno.TagSequence, nil, "LDAP Request")
-	requestPacket.AppendChild(asno.NewInteger(asno.ClassUniversal, asno.TypePrimitive, asno.TagInteger, msgID, "MessageID"))
+	requestPacket := asn1.Encode(asn1.ClassUniversal, asn1.TypeConstructed, asn1.TagSequence, nil, "LDAP Request")
+	requestPacket.AppendChild(asn1.NewInteger(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagInteger, msgID, "MessageID"))
 
 	var err error
 
@@ -135,8 +135,8 @@ func testSendRequest(t *testing.T, ptc *packetTranslatorConn, conn *Conn) (msgCt
 
 func testReceiveResponse(t *testing.T, ptc *packetTranslatorConn, msgCtx *messageContext) {
 	// Send a mock response packet.
-	responsePacket := asno.Encode(asno.ClassUniversal, asno.TypeConstructed, asno.TagSequence, nil, "LDAP Response")
-	responsePacket.AppendChild(asno.NewInteger(asno.ClassUniversal, asno.TypePrimitive, asno.TagInteger, msgCtx.id, "MessageID"))
+	responsePacket := asn1.Encode(asn1.ClassUniversal, asn1.TypeConstructed, asn1.TagSequence, nil, "LDAP Response")
+	responsePacket.AppendChild(asn1.NewInteger(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagInteger, msgCtx.id, "MessageID"))
 
 	runWithTimeout(t, time.Second, func() {
 		if err := ptc.SendResponse(responsePacket); err != nil {
@@ -154,8 +154,8 @@ func testReceiveResponse(t *testing.T, ptc *packetTranslatorConn, msgCtx *messag
 
 func testSendUnhandledResponsesAndFinish(t *testing.T, ptc *packetTranslatorConn, conn *Conn, msgCtx *messageContext, numResponses int) {
 	// Send a mock response packet.
-	responsePacket := asno.Encode(asno.ClassUniversal, asno.TypeConstructed, asno.TagSequence, nil, "LDAP Response")
-	responsePacket.AppendChild(asno.NewInteger(asno.ClassUniversal, asno.TypePrimitive, asno.TagInteger, msgCtx.id, "MessageID"))
+	responsePacket := asn1.Encode(asn1.ClassUniversal, asn1.TypeConstructed, asn1.TagSequence, nil, "LDAP Response")
+	responsePacket.AppendChild(asn1.NewInteger(asn1.ClassUniversal, asn1.TypePrimitive, asn1.TagInteger, msgCtx.id, "MessageID"))
 
 	// Send extra responses but do not attempt to receive them on the
 	// client side.
@@ -242,7 +242,7 @@ func (c *packetTranslatorConn) Read(b []byte) (n int, err error) {
 
 // SendResponse writes the given response packet to the response buffer for
 // this connection, signalling any goroutine waiting to read a response.
-func (c *packetTranslatorConn) SendResponse(packet *asno.Packet) error {
+func (c *packetTranslatorConn) SendResponse(packet *asn1.Packet) error {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 
@@ -278,7 +278,7 @@ func (c *packetTranslatorConn) Write(b []byte) (n int, err error) {
 // ReceiveRequest attempts to read a request packet from this connection. It
 // will block until it is able to read a full request packet or until this
 // connection is closed.
-func (c *packetTranslatorConn) ReceiveRequest() (*asno.Packet, error) {
+func (c *packetTranslatorConn) ReceiveRequest() (*asn1.Packet, error) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 
@@ -286,7 +286,7 @@ func (c *packetTranslatorConn) ReceiveRequest() (*asno.Packet, error) {
 		// Attempt to parse a request packet from the request buffer.
 		// If it fails with an unexpected EOF, wait and try again.
 		requestReader := bytes.NewReader(c.requestBuf.Bytes())
-		packet, err := asno.ReadPacket(requestReader)
+		packet, err := asn1.ReadPacket(requestReader)
 		switch err {
 		case io.EOF, io.ErrUnexpectedEOF:
 			c.requestCond.Wait()

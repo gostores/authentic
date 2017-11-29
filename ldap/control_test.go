@@ -7,7 +7,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/gostores/authentic/asno"
+	"github.com/gostores/encoding/asn1"
 )
 
 func TestControlPaging(t *testing.T) {
@@ -48,7 +48,7 @@ func runControlTest(t *testing.T, originalControl Control) {
 	}
 
 	// Decode from the wire bytes (ensures ber-encoding is correct)
-	fromBytes := DecodeControl(asno.DecodePacket(encodedBytes))
+	fromBytes := DecodeControl(asn1.DecodePacket(encodedBytes))
 	if !bytes.Equal(encodedBytes, fromBytes.Encode().Bytes()) {
 		t.Errorf("%sround-trip from encoded bytes failed", header)
 	}

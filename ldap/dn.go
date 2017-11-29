@@ -48,7 +48,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gostores/authentic/asno"
+	"github.com/gostores/encoding/asn1"
 )
 
 // AttributeTypeAndValue represents an attributeTypeAndValue from https://tools.ietf.org/html/rfc4514
@@ -133,7 +133,7 @@ func ParseDN(str string) (*DN, error) {
 				if err != nil {
 					return nil, fmt.Errorf("Failed to decode BER encoding: %s", err)
 				}
-				packet := asno.DecodePacket(rawBER)
+				packet := asn1.DecodePacket(rawBER)
 				buffer.WriteString(packet.Data.String())
 				i += len(data) - 1
 			}

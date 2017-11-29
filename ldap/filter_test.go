@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gostores/authentic/asno"
 	"github.com/gostores/authentic/ldap"
+	"github.com/gostores/encoding/asn1"
 )
 
 type compileTest struct {
@@ -200,7 +200,7 @@ func TestFilter(t *testing.T) {
 			if i.expectedErr == "" || !strings.Contains(err.Error(), i.expectedErr) {
 				t.Errorf("Problem compiling '%s' - '%v' (expected error to contain '%v')", i.filterStr, err, i.expectedErr)
 			}
-		} else if filter.Tag != asno.Tag(i.expectedType) {
+		} else if filter.Tag != asn1.Tag(i.expectedType) {
 			t.Errorf("%q Expected %q got %q", i.filterStr, ldap.FilterMap[uint64(i.expectedType)], ldap.FilterMap[uint64(filter.Tag)])
 		} else {
 			o, err := ldap.DecompileFilter(filter)
@@ -239,7 +239,7 @@ func BenchmarkFilterCompile(b *testing.B) {
 
 func BenchmarkFilterDecompile(b *testing.B) {
 	b.StopTimer()
-	filters := make([]*asno.Packet, len(testFilters))
+	filters := make([]*asn1.Packet, len(testFilters))
 
 	// Test Compiler and Decompiler
 	for idx, i := range testFilters {

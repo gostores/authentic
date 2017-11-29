@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/gostores/authentic/asno"
+	"github.com/gostores/encoding/asn1"
 )
 
 // LDAP Application Codes
@@ -83,7 +83,7 @@ var BeheraPasswordPolicyErrorMap = map[int8]string{
 }
 
 // Adds descriptions to an LDAP Response packet for debugging
-func addLDAPDescriptions(packet *asno.Packet) (err error) {
+func addLDAPDescriptions(packet *asn1.Packet) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = NewError(ErrorDebugging, errors.New("ldap: cannot process packet to add descriptions"))
@@ -146,10 +146,10 @@ func addLDAPDescriptions(packet *asno.Packet) (err error) {
 	return nil
 }
 
-func addControlDescriptions(packet *asno.Packet) {
+func addControlDescriptions(packet *asn1.Packet) {
 	packet.Description = "Controls"
 	for _, child := range packet.Children {
-		var value *asno.Packet
+		var value *asn1.Packet
 		controlType := ""
 		child.Description = "Control"
 		switch len(child.Children) {
@@ -193,7 +193,7 @@ func addControlDescriptions(packet *asno.Packet) {
 		case ControlTypePaging:
 			value.Description += " (Paging)"
 			if value.Value != nil {
-				valueChildren := asno.DecodePacket(value.Data.Bytes())
+				valueChildren := asn1.DecodePacket(value.Data.Bytes())
 				value.Data.Truncate(0)
 				value.Value = nil
 				valueChildren.Children[1].Value = valueChildren.Children[1].Data.Bytes()
@@ -206,7 +206,7 @@ func addControlDescriptions(packet *asno.Packet) {
 		case ControlTypeBeheraPasswordPolicy:
 			value.Description += " (Password Policy - Behera Draft)"
 			if value.Value != nil {
-				valueChildren := asno.DecodePacket(value.Data.Bytes())
+				valueChildren := asn1.DecodePacket(value.Data.Bytes())
 				value.Data.Truncate(0)
 				value.Value = nil
 				value.AppendChild(valueChildren)
@@ -216,7 +216,7 @@ func addControlDescriptions(packet *asno.Packet) {
 				if child.Tag == 0 {
 					//Warning
 					warningPacket := child.Children[0]
-					packet := asno.DecodePacket(warningPacket.Data.Bytes())
+					packet := asn1.DecodePacket(warningPacket.Data.Bytes())
 					val, ok := packet.Value.(int64)
 					if ok {
 						if warningPacket.Tag == 0 {
@@ -231,7 +231,7 @@ func addControlDescriptions(packet *asno.Packet) {
 					}
 				} else if child.Tag == 1 {
 					// Error
-					packet := asno.DecodePacket(child.Data.Bytes())
+					packet := asn1.DecodePacket(child.Data.Bytes())
 					val, ok := packet.Value.(int8)
 					if !ok {
 						val = -1
@@ -244,7 +244,7 @@ func addControlDescriptions(packet *asno.Packet) {
 	}
 }
 
-func addRequestDescriptions(packet *asno.Packet) {
+func addRequestDescriptions(packet *asn1.Packet) {
 	packet.Description = "LDAP Request"
 	packet.Children[0].Description = "Message ID"
 	packet.Children[1].Description = ApplicationMap[uint8(packet.Children[1].Tag)]
@@ -253,7 +253,7 @@ func addRequestDescriptions(packet *asno.Packet) {
 	}
 }
 
-func addDefaultLDAPResponseDescriptions(packet *asno.Packet) {
+func addDefaultLDAPResponseDescriptions(packet *asn1.Packet) {
 	resultCode, _ := getLDAPResultCode(packet)
 	packet.Children[1].Children[0].Description = "Result Code (" + LDAPResultCodeMap[resultCode] + ")"
 	packet.Children[1].Children[1].Description = "Matched DN"
@@ -272,10 +272,10 @@ func DebugBinaryFile(fileName string) error {
 	if err != nil {
 		return NewError(ErrorDebugging, err)
 	}
-	asno.PrintBytes(os.Stdout, file, "")
-	packet := asno.DecodePacket(file)
+	asn1.PrintBytes(os.Stdout, file, "")
+	packet := asn1.DecodePacket(file)
 	addLDAPDescriptions(packet)
-	asno.PrintPacket(packet)
+	asn1.PrintPacket(packet)
 
 	return nil
 }
