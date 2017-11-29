@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pquerna/cachecontrol"
+	"github.com/gostores/cachecontrol"
 	jose "gopkg.in/square/go-jose.v2"
 )
 
