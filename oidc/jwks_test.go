@@ -14,7 +14,7 @@ import (
 	"testing"
 	"time"
 
-	jose "gopkg.in/square/go-jose.v2"
+	"github.com/gostores/sincere/jose"
 )
 
 type keyServer struct {
