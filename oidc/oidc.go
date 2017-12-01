@@ -78,7 +78,7 @@ type Provider struct {
 }
 
 type cachedKeys struct {
-	keys   []jose.JSONWebKey
+	keys   []jose.JsonWebKey
 	expiry time.Time
 }
 

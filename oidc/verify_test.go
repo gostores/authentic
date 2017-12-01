@@ -11,7 +11,7 @@ import (
 )
 
 type testVerifier struct {
-	jwk jose.JSONWebKey
+	jwk jose.JsonWebKey
 }
 
 func (t *testVerifier) VerifySignature(ctx context.Context, jwt string) ([]byte, error) {

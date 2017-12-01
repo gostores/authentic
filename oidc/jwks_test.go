@@ -18,7 +18,7 @@ import (
 )
 
 type keyServer struct {
-	keys       jose.JSONWebKeySet
+	keys       jose.JsonWebKeySet
 	setHeaders func(h http.Header)
 }
 
@@ -40,7 +40,7 @@ type signingKey struct {
 
 // sign creates a JWS using the private key from the provided payload.
 func (s *signingKey) sign(t *testing.T, payload []byte) string {
-	privKey := &jose.JSONWebKey{Key: s.priv, Algorithm: string(s.alg), KeyID: s.keyID}
+	privKey := &jose.JsonWebKey{Key: s.priv, Algorithm: string(s.alg), KeyID: s.keyID}
 
 	signer, err := jose.NewSigner(jose.SigningKey{Algorithm: s.alg, Key: privKey}, nil)
 	if err != nil {
@@ -59,8 +59,8 @@ func (s *signingKey) sign(t *testing.T, payload []byte) string {
 }
 
 // jwk returns the public part of the signing key.
-func (s *signingKey) jwk() jose.JSONWebKey {
-	return jose.JSONWebKey{Key: s.pub, Use: "sig", Algorithm: string(s.alg), KeyID: s.keyID}
+func (s *signingKey) jwk() jose.JsonWebKey {
+	return jose.JsonWebKey{Key: s.pub, Use: "sig", Algorithm: string(s.alg), KeyID: s.keyID}
 }
 
 func newRSAKey(t *testing.T) *signingKey {
@@ -127,7 +127,7 @@ func testKeyVerify(t *testing.T, good, bad *signingKey, verification ...*signing
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	keySet := jose.JSONWebKeySet{}
+	keySet := jose.JsonWebKeySet{}
 	for _, v := range verification {
 		keySet.Keys = append(keySet.Keys, v.jwk())
 	}
@@ -196,8 +196,8 @@ func TestCacheControl(t *testing.T) {
 	now := time.Now()
 
 	server := &keyServer{
-		keys: jose.JSONWebKeySet{
-			Keys: []jose.JSONWebKey{key1.jwk()},
+		keys: jose.JsonWebKeySet{
+			Keys: []jose.JsonWebKey{key1.jwk()},
 		},
 		setHeaders: func(h http.Header) {
 			h.Set("Cache-Control", "max-age="+strconv.Itoa(cacheForSeconds))
@@ -216,8 +216,8 @@ func TestCacheControl(t *testing.T) {
 	}
 
 	// Add second key to public list.
-	server.keys = jose.JSONWebKeySet{
-		Keys: []jose.JSONWebKey{key1.jwk(), key2.jwk()},
+	server.keys = jose.JsonWebKeySet{
+		Keys: []jose.JsonWebKey{key1.jwk(), key2.jwk()},
 	}
 
 	if _, err := rks.verify(ctx, jws1); err != nil {
