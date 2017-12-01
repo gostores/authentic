@@ -57,7 +57,7 @@ type remoteKeySet struct {
 	inflight *inflight
 
 	// A set of cached keys and their expiry.
-	cachedKeys []jose.JsonWebKey
+	cachedKeys []jose.JSONWebKey
 	expiry     time.Time
 }
 
@@ -65,7 +65,7 @@ type remoteKeySet struct {
 type inflight struct {
 	doneCh chan struct{}
 
-	keys []jose.JsonWebKey
+	keys []jose.JSONWebKey
 	err  error
 }
 
@@ -82,14 +82,14 @@ func (i *inflight) wait() <-chan struct{} {
 // done can only be called by a single goroutine. It records the result of the
 // inflight request and signals other goroutines that the result is safe to
 // inspect.
-func (i *inflight) done(keys []jose.JsonWebKey, err error) {
+func (i *inflight) done(keys []jose.JSONWebKey, err error) {
 	i.keys = keys
 	i.err = err
 	close(i.doneCh)
 }
 
 // result cannot be called until the wait() channel has returned a value.
-func (i *inflight) result() ([]jose.JsonWebKey, error) {
+func (i *inflight) result() ([]jose.JSONWebKey, error) {
 	return i.keys, i.err
 }
 
@@ -101,7 +101,7 @@ func (r *remoteKeySet) VerifySignature(ctx context.Context, jwt string) ([]byte,
 	return r.verify(ctx, jws)
 }
 
-func (r *remoteKeySet) verify(ctx context.Context, jws *jose.JsonWebSignature) ([]byte, error) {
+func (r *remoteKeySet) verify(ctx context.Context, jws *jose.JSONWebSignature) ([]byte, error) {
 	// We don't support JWTs signed with multiple signatures.
 	keyID := ""
 	for _, sig := range jws.Signatures {
@@ -140,7 +140,7 @@ func (r *remoteKeySet) verify(ctx context.Context, jws *jose.JsonWebSignature) (
 	return nil, errors.New("failed to verify id token signature")
 }
 
-func (r *remoteKeySet) keysFromCache() (keys []jose.JsonWebKey, expiry time.Time) {
+func (r *remoteKeySet) keysFromCache() (keys []jose.JSONWebKey, expiry time.Time) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	return r.cachedKeys, r.expiry
@@ -148,7 +148,7 @@ func (r *remoteKeySet) keysFromCache() (keys []jose.JsonWebKey, expiry time.Time
 
 // keysFromRemote syncs the key set from the remote set, records the values in the
 // cache, and returns the key set.
-func (r *remoteKeySet) keysFromRemote(ctx context.Context) ([]jose.JsonWebKey, error) {
+func (r *remoteKeySet) keysFromRemote(ctx context.Context) ([]jose.JSONWebKey, error) {
 	// Need to lock to inspect the inflight request field.
 	r.mu.Lock()
 	// If there's not a current inflight request, create one.
@@ -189,7 +189,7 @@ func (r *remoteKeySet) keysFromRemote(ctx context.Context) ([]jose.JsonWebKey, e
 	}
 }
 
-func (r *remoteKeySet) updateKeys() ([]jose.JsonWebKey, time.Time, error) {
+func (r *remoteKeySet) updateKeys() ([]jose.JSONWebKey, time.Time, error) {
 	req, err := http.NewRequest("GET", r.jwksURL, nil)
 	if err != nil {
 		return nil, time.Time{}, fmt.Errorf("oidc: can't create request: %v", err)
@@ -210,7 +210,7 @@ func (r *remoteKeySet) updateKeys() ([]jose.JsonWebKey, time.Time, error) {
 		return nil, time.Time{}, fmt.Errorf("oidc: get keys failed: %s %s", resp.Status, body)
 	}
 
-	var keySet jose.JsonWebKeySet
+	var keySet jose.JSONWebKeySet
 	err = unmarshalResp(resp, body, &keySet)
 	if err != nil {
 		return nil, time.Time{}, fmt.Errorf("oidc: failed to decode keys: %v %s", err, body)
