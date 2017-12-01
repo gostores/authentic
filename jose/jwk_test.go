@@ -30,7 +30,7 @@ import (
 
 	"golang.org/x/crypto/ed25519"
 
-	"github.com/gostores/authentic/jose/json"
+	"github.com/gostores/checking/jose/json"
 )
 
 // Test chain of two X.509 certificates

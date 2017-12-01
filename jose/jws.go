@@ -22,7 +22,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gostores/authentic/jose/json"
+	"github.com/gostores/checking/jose/json"
 )
 
 // rawJSONWebSignature represents a raw JWS JSON object. Used for parsing/serializing.

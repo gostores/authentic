@@ -26,7 +26,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/gostores/authentic/jose/json"
+	"github.com/gostores/checking/jose/json"
 )
 
 type staticNonceSource string

@@ -16,8 +16,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gostores/authentic/jwt"
-	"github.com/gostores/authentic/jwt/request"
+	"github.com/gostores/checking/jwt"
+	"github.com/gostores/checking/jwt/request"
 )
 
 // location of the files used for signing and verification

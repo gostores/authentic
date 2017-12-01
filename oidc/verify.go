@@ -12,7 +12,7 @@ import (
 
 	"golang.org/x/oauth2"
 
-	"github.com/gostores/authentic/jose"
+	"github.com/gostores/checking/jose"
 )
 
 const (

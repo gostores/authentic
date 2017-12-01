@@ -30,8 +30,8 @@ import (
 
 	"golang.org/x/crypto/ed25519"
 
-	"github.com/gostores/authentic/jose/cipher"
-	"github.com/gostores/authentic/jose/json"
+	"github.com/gostores/checking/jose/cipher"
+	"github.com/gostores/checking/jose/json"
 )
 
 // A generic RSA-based encrypter/verifier

@@ -22,7 +22,7 @@ import (
 	"time"
 
 	"github.com/gostores/assert"
-	"github.com/gostores/authentic/jose"
+	"github.com/gostores/checking/jose"
 )
 
 func TestEncodeClaims(t *testing.T) {

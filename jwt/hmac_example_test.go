@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"time"
 
-	"github.com/gostores/authentic/jwt"
+	"github.com/gostores/checking/jwt"
 )
 
 // For HMAC signing method, the key can be any []byte. It is recommended to generate

@@ -21,7 +21,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/gostores/authentic/jose/json"
+	"github.com/gostores/checking/jose/json"
 )
 
 // KeyAlgorithm represents a key management algorithm.

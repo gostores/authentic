@@ -9,8 +9,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gostores/authentic/jose"
 	"github.com/gostores/cachecontrol"
+	"github.com/gostores/checking/jose"
 )
 
 // keysExpiryDelta is the allowed clock skew between a client and the OpenID Connect

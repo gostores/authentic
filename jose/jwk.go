@@ -29,7 +29,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/gostores/authentic/jose/json"
+	"github.com/gostores/checking/jose/json"
 	"golang.org/x/crypto/ed25519"
 )
 

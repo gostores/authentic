@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gostores/authentic/ldap"
+	"github.com/gostores/checking/ldap"
 	"github.com/gostores/encoding/asn1"
 )
 

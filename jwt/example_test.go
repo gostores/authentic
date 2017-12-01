@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gostores/authentic/jwt"
+	"github.com/gostores/checking/jwt"
 )
 
 // Example (atypical) using the StandardClaims type by itself to parse a token.

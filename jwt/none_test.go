@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gostores/authentic/jwt"
+	"github.com/gostores/checking/jwt"
 )
 
 var noneTestData = []struct {

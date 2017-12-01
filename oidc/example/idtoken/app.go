@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/gostores/authentic/oidc"
+	"github.com/gostores/checking/oidc"
 
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
